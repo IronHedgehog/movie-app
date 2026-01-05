@@ -5,7 +5,7 @@ import MovieDetails from "../pages/MovieDetails";
 const AppRouter = () => (
   <Routes>
     <Route path="/" element={<Home />} />
-    <Route path="/movies/:id" element={<MovieDetails />} />
+    <Route path="/movies/:movieId" element={<MovieDetails />} />
   </Routes>
 );
 
