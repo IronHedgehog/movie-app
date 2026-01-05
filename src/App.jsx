@@ -1,5 +1,7 @@
+import AppRouter from "./router/AppRouter";
+
 function App() {
-  return <div>Movie App</div>;
+  return <AppRouter />;
 }
 
 export default App;
