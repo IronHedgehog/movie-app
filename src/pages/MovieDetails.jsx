@@ -1,15 +1,23 @@
 import { useParams } from "react-router-dom";
-import { getMovieDetails } from "../api/moviesApi";
-import { useMovieDetails } from "../hooks/useMovieDetails";
 
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+import { getMovieDetails } from "../api/moviesApi";
+
+import ErrorMessage from "../components/UI/ErrorMessage";
+import Loader from "../components/UI/Loader";
+
+import { useMovieDetails } from "../hooks";
+
+import { IMAGE_BASE_URL } from "../utils/constants";
 
 const MovieDetails = () => {
   const { movieId } = useParams();
-  const { movie, loading, error } = useMovieDetails(getMovieDetails, movieId);
+  const { movie, loading, error, retry } = useMovieDetails(
+    getMovieDetails,
+    movieId
+  );
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <Loader />;
+  if (error) return <ErrorMessage message={error} onRetry={retry} />;
   if (!movie) return null;
 
   return (

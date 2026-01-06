@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import MovieList from "../components/MovieList";
-import SearchBar from "../components/SearchBar";
+
 import { getPopularMovies, searchMovies } from "../api/moviesApi";
-import { usePaginatedMovies } from "../hooks/usePaginatedMovies";
+
+import MovieList from "../components/movieList/MovieList";
+import SearchBar from "../components/SearchBar/SearchBar";
+import ErrorMessage from "../components/UI/ErrorMessage";
+import Loader from "../components/UI/Loader";
+
+import { usePaginatedMovies } from "../hooks";
 
 const Home = () => {
   const [query, setQuery] = useState("");
@@ -29,11 +34,11 @@ const Home = () => {
     <div>
       <SearchBar onSearch={setQuery} debounceTime={500} />
 
-      {error && <p>{error}</p>}
+      {error && <ErrorMessage message={error} onRetry={reset} />}
 
       <MovieList movies={movies} />
 
-      {loading && <p>Loading...</p>}
+      {loading && <Loader />}
 
       {!loading && hasMore && <button onClick={loadMore}>Load more</button>}
     </div>

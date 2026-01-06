@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAbortableFetch } from "./useAbortableFetch";
 
 export const useMovieDetails = (fetchFn, movieId) => {
@@ -8,27 +8,32 @@ export const useMovieDetails = (fetchFn, movieId) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchMovie = useCallback(async () => {
     if (!movieId) return;
 
-    const fetchMovie = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const data = await fetchFn(movieId, createSignal());
-        setMovie(data);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError("Failed to load movie");
-        }
-      } finally {
-        setLoading(false);
+      const data = await fetchFn(movieId, createSignal());
+      setMovie(data);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setError("Failed to load movie");
       }
-    };
-
-    fetchMovie();
+    } finally {
+      setLoading(false);
+    }
   }, [movieId, fetchFn]);
 
-  return { movie, loading, error };
+  useEffect(() => {
+    fetchMovie();
+  }, [fetchMovie]);
+
+  return {
+    movie,
+    loading,
+    error,
+    retry: fetchMovie,
+  };
 };

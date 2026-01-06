@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import debounce from "lodash.debounce";
+// import styles from "./SearchBar.module.scss"
 
 const SearchBar = ({ onSearch, debounceTime = 500 }) => {
   const [value, setValue] = useState("");

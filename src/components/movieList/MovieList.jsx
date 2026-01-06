@@ -1,4 +1,5 @@
-import MovieCard from "./MovieCard";
+import MovieCard from "../movieCard/MovieCard";
+// import styles from "./MovieList.module.scss"
 
 const MovieList = ({ movies }) => {
   return (
