@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAbortableFetch } from "./useAbortableFetch";
 import { useMoviesCache } from "./useMoviesCache";
 
@@ -45,14 +45,26 @@ export const usePaginatedMovies = (fetchFn, query = "") => {
     fetchMovies();
   }, [fetchFn, query, page]);
 
-  const loadMore = () => !loading && hasMore && setPage((p) => p + 1);
+  const loadMore = useCallback(() => {
+    if (!loading && hasMore) {
+      setPage((p) => p + 1);
+    }
+  }, [loading, hasMore]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     cache.clear();
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  };
+  }, []);
 
-  return { movies, loading, error, hasMore, loadMore, reset };
+  return {
+    movies,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+    reset,
+    isFirstPage: page === 1,
+  };
 };

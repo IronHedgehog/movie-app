@@ -1,8 +1,10 @@
+import Button from "@mui/material/Button";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getPopularMovies, searchMovies } from "../api/moviesApi";
 
 import MovieList from "../components/movieList/MovieList";
+import MovieSkeletonList from "../components/movieList/MovieSkeletonList";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ErrorMessage from "../components/UI/ErrorMessage";
 import Loader from "../components/UI/Loader";
@@ -19,7 +21,7 @@ const Home = () => {
     []
   );
 
-  const { movies, loading, error, hasMore, loadMore, reset } =
+  const { movies, loading, error, hasMore, loadMore, reset, isFirstPage } =
     usePaginatedMovies(fetchFn, query);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ const Home = () => {
       return;
     }
     reset();
-  }, [query]);
+  }, [query, reset]);
 
   return (
     <div>
@@ -36,11 +38,19 @@ const Home = () => {
 
       {error && <ErrorMessage message={error} onRetry={reset} />}
 
-      <MovieList movies={movies} />
+      {loading && isFirstPage ? (
+        <MovieSkeletonList />
+      ) : (
+        <MovieList movies={movies} />
+      )}
 
-      {loading && <Loader />}
+      {loading && !isFirstPage && <Loader />}
 
-      {!loading && hasMore && <button onClick={loadMore}>Load more</button>}
+      {!loading && hasMore && (
+        <Button variant="outlined" onClick={loadMore}>
+          Load more
+        </Button>
+      )}
     </div>
   );
 };

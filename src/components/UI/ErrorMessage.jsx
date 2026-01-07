@@ -1,8 +1,16 @@
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+
 const ErrorMessage = ({ message, onRetry }) => (
-  <div>
-    <p>{message}</p>
-    {onRetry && <button onClick={onRetry}>Retry</button>}
-  </div>
+  <Stack spacing={2} alignItems="center" my={3}>
+    <Alert severity="error">{message}</Alert>
+    {onRetry && (
+      <Button variant="contained" onClick={onRetry}>
+        Retry
+      </Button>
+    )}
+  </Stack>
 );
 
 export default ErrorMessage;
