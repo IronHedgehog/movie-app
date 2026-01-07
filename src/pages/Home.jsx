@@ -41,12 +41,12 @@ const Home = () => {
       {loading && isFirstPage ? (
         <MovieSkeletonList />
       ) : (
-        <MovieList movies={movies} />
+        <MovieList movies={movies} loading={loading} />
       )}
 
       {loading && !isFirstPage && <Loader />}
 
-      {!loading && hasMore && (
+      {!loading && hasMore && !error && (
         <Button variant="outlined" onClick={loadMore}>
           Load more
         </Button>
