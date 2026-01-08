@@ -9,6 +9,8 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import ErrorMessage from "../components/UI/ErrorMessage";
 import Loader from "../components/UI/Loader";
 
+import PageContainer from "../components/layout/PageContainer";
+import ThemeToggle from "../components/UI/ThemeToggle";
 import { usePaginatedMovies } from "../hooks";
 
 const Home = () => {
@@ -33,26 +35,31 @@ const Home = () => {
   }, [query, reset]);
 
   return (
-    <div>
+    <main>
       <div className="min-h-screen bg-bg text-white p-6">Tailwind works</div>
-      <SearchBar onSearch={setQuery} debounceTime={500} />
+      <PageContainer>
+        <div className="flex justify-end py-4">
+          <ThemeToggle />
+        </div>
+        <SearchBar onSearch={setQuery} debounceTime={500} />
 
-      {error && <ErrorMessage message={error} onRetry={reset} />}
+        {error && <ErrorMessage message={error} onRetry={reset} />}
 
-      {loading && isFirstPage ? (
-        <MovieSkeletonList />
-      ) : (
-        <MovieList movies={movies} loading={loading} />
-      )}
+        {loading && isFirstPage ? (
+          <MovieSkeletonList />
+        ) : (
+          <MovieList movies={movies} loading={loading} />
+        )}
 
-      {loading && !isFirstPage && <Loader />}
+        {loading && !isFirstPage && <Loader />}
 
-      {!loading && hasMore && !error && (
-        <Button variant="outlined" onClick={loadMore}>
-          Load more
-        </Button>
-      )}
-    </div>
+        {!loading && hasMore && !error && (
+          <Button variant="outlined" onClick={loadMore}>
+            Load more
+          </Button>
+        )}
+      </PageContainer>
+    </main>
   );
 };
 
