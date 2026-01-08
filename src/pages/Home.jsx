@@ -34,6 +34,7 @@ const Home = () => {
 
   return (
     <div>
+      <div className="min-h-screen bg-bg text-white p-6">Tailwind works</div>
       <SearchBar onSearch={setQuery} debounceTime={500} />
 
       {error && <ErrorMessage message={error} onRetry={reset} />}
