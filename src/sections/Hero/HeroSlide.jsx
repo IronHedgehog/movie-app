@@ -20,7 +20,7 @@ export default function HeroSlide({ movie, isPriority = false }) {
         aria-hidden
         className="absolute inset-0 h-full w-full object-cover scale-110 pointer-events-none"
         loading={isPriority ? "eager" : "lazy"}
-        fetchpriority={isPriority ? "high" : "auto"}
+        fetchPriority={isPriority ? "high" : "auto"}
       />
 
       {/* Overlay */}

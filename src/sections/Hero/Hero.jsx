@@ -1,5 +1,7 @@
 import { A11y, Autoplay, EffectFade, Keyboard, Parallax } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+
+import HeroErrorBoundary from "./HeroErrorBoundary";
 import HeroSkeleton from "./HeroSkeleton";
 import HeroSlide from "./HeroSlide";
 import { useHeroMovies } from "./useHeroMovies";
@@ -11,7 +13,7 @@ const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"
 ).matches;
 
-export default function Hero() {
+function HeroContent() {
   const { movies, loading } = useHeroMovies();
 
   if (loading) return <HeroSkeleton />;
@@ -53,5 +55,13 @@ export default function Hero() {
         ))}
       </Swiper>
     </section>
+  );
+}
+
+export default function Hero() {
+  return (
+    <HeroErrorBoundary>
+      <HeroContent />
+    </HeroErrorBoundary>
   );
 }
