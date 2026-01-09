@@ -12,6 +12,7 @@ import Loader from "../components/UI/Loader";
 import PageContainer from "../components/layout/PageContainer";
 import ThemeToggle from "../components/UI/ThemeToggle";
 import { usePaginatedMovies } from "../hooks";
+import Hero from "../sections/Hero/Hero";
 
 const Home = () => {
   const [query, setQuery] = useState("");
@@ -36,7 +37,8 @@ const Home = () => {
 
   return (
     <main>
-      <div className="min-h-screen bg-bg text-white p-6">Tailwind works</div>
+      <Hero />
+
       <PageContainer>
         <div className="flex justify-end py-4">
           <ThemeToggle />
