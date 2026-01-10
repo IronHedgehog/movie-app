@@ -1,12 +1,15 @@
+import MainLayout from "@/layouts/MainLayout";
+import HomePage from "@/pages/HomePage";
+import MoviePage from "@/pages/MoviePage";
 import { Route, Routes } from "react-router-dom";
-import Home from "../pages/Home";
-import MovieDetails from "../pages/MovieDetails";
 
-const AppRouter = () => (
-  <Routes>
-    <Route path="/" element={<Home />} />
-    <Route path="/movies/:movieId" element={<MovieDetails />} />
-  </Routes>
-);
-
-export default AppRouter;
+export default function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/movies/:movieId" element={<MoviePage />} />
+      </Route>
+    </Routes>
+  );
+}

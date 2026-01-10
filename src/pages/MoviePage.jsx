@@ -9,7 +9,7 @@ import { useMovieDetails } from "../hooks";
 
 import { IMAGE_BASE_URL } from "../utils/constants";
 
-const MovieDetails = () => {
+const MoviePage = () => {
   const { movieId } = useParams();
   const { movie, loading, error, retry } = useMovieDetails(
     getMovieDetails,
@@ -43,4 +43,4 @@ const MovieDetails = () => {
   );
 };
 
-export default MovieDetails;
+export default MoviePage;

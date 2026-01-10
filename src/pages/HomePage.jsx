@@ -12,9 +12,11 @@ import Loader from "../components/UI/Loader";
 import PageContainer from "../components/layout/PageContainer";
 import ThemeToggle from "../components/UI/ThemeToggle";
 import { usePaginatedMovies } from "../hooks";
+
+import Header from "../sections/Header/components/Header";
 import Hero from "../sections/Hero/Hero";
 
-const Home = () => {
+const HomePage = () => {
   const [query, setQuery] = useState("");
   const isFirstRender = useRef(true);
 
@@ -37,6 +39,7 @@ const Home = () => {
 
   return (
     <main>
+      <Header />
       <Hero />
 
       <PageContainer>
@@ -65,4 +68,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;
