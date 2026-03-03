@@ -10,7 +10,7 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 
 const prefersReducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
+  "(prefers-reduced-motion: reduce)",
 ).matches;
 
 function HeroContent() {

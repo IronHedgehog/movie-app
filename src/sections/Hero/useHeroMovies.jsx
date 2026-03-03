@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { getHeroMovies } from "../../api/moviesApi";
-import { useAbortableFetch } from "../../hooks";
+// import { useAbortableFetch } from "../../hooks";
 
 export const useHeroMovies = () => {
-  const { createSignal } = useAbortableFetch();
+  // const { createSignal } = useAbortableFetch();
 
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export const useHeroMovies = () => {
         setLoading(true);
         setError(null);
 
-        const data = await getHeroMovies(createSignal());
+        const data = await getHeroMovies();
         setMovies(data);
       } catch (err) {
         if (err.name !== "AbortError") {

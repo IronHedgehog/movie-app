@@ -1,7 +1,11 @@
 import Button from "@mui/material/Button";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { getPopularMovies, searchMovies } from "../api/moviesApi";
+// Імпортуємо обидва хуки
+import {
+  useGetPopularMoviesQuery,
+  useSearchMoviesQuery,
+} from "../store/services/moviesApi";
 
 import MovieList from "../components/movieList/MovieList";
 import MovieSkeletonList from "../components/movieList/MovieSkeletonList";
@@ -11,31 +15,57 @@ import Loader from "../components/UI/Loader";
 
 import PageContainer from "../components/layout/PageContainer";
 import ThemeToggle from "../components/UI/ThemeToggle";
-import { usePaginatedMovies } from "../hooks";
 
 import Header from "../sections/Header/components/Header";
 import Hero from "../sections/Hero/Hero";
 
 const HomePage = () => {
   const [query, setQuery] = useState("");
-  const isFirstRender = useRef(true);
+  const [page, setPage] = useState(1);
 
-  const fetchFn = useCallback(
-    (q, page, signal) =>
-      q ? searchMovies(q, page, signal) : getPopularMovies(page, signal),
-    []
-  );
+  // Прапорець: чи ми зараз щось шукаємо?
+  const isSearch = Boolean(query);
 
-  const { movies, loading, error, hasMore, loadMore, reset, isFirstPage } =
-    usePaginatedMovies(fetchFn, query);
+  // 1. Запит популярних фільмів (Пропускаємо, якщо є пошуковий запит)
+  const {
+    data: popularData,
+    isFetching: isFetchingPopular,
+    isError: isErrorPopular,
+    refetch: refetchPopular,
+  } = useGetPopularMoviesQuery(page, { skip: isSearch });
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
+  // 2. Запит пошуку (Пропускаємо, якщо поле пошуку порожнє)
+  const {
+    data: searchData,
+    isFetching: isFetchingSearch,
+    isError: isErrorSearch,
+    refetch: refetchSearch,
+  } = useSearchMoviesQuery({ query, page }, { skip: !isSearch });
+
+  // 3. Динамічно визначаємо, які дані зараз показувати
+  const currentData = isSearch ? searchData : popularData;
+  const isFetching = isSearch ? isFetchingSearch : isFetchingPopular;
+  const isError = isSearch ? isErrorSearch : isErrorPopular;
+  const refetch = isSearch ? refetchSearch : refetchPopular;
+
+  const movies = currentData?.results || [];
+  const totalPages = currentData?.total_pages || 0;
+
+  // Додаємо безпечні перевірки
+  const hasMore = page < totalPages;
+  const isFirstPage = page === 1;
+
+  // Обробник пошуку
+  const handleSearch = (newQuery) => {
+    setQuery(newQuery);
+    setPage(1); // Новий пошук завжди починається з 1 сторінки
+  };
+
+  const loadMore = () => {
+    if (!isFetching && hasMore) {
+      setPage((prevPage) => prevPage + 1);
     }
-    reset();
-  }, [query, reset]);
+  };
 
   return (
     <main>
@@ -46,19 +76,21 @@ const HomePage = () => {
         <div className="flex justify-end py-4">
           <ThemeToggle />
         </div>
-        <SearchBar onSearch={setQuery} debounceTime={500} />
+        <SearchBar onSearch={handleSearch} debounceTime={500} />
 
-        {error && <ErrorMessage message={error} onRetry={reset} />}
-
-        {loading && isFirstPage ? (
-          <MovieSkeletonList />
-        ) : (
-          <MovieList movies={movies} loading={loading} />
+        {isError && (
+          <ErrorMessage message="Failed to fetch movies" onRetry={refetch} />
         )}
 
-        {loading && !isFirstPage && <Loader />}
+        {isFetching && isFirstPage ? (
+          <MovieSkeletonList />
+        ) : (
+          <MovieList movies={movies} loading={isFetching} />
+        )}
 
-        {!loading && hasMore && !error && (
+        {isFetching && !isFirstPage && <Loader />}
+
+        {!isFetching && hasMore && !isError && (
           <Button variant="outlined" onClick={loadMore}>
             Load more
           </Button>
