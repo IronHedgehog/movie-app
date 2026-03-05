@@ -1,63 +1,50 @@
 import { useGetMovieReviewsQuery } from "../../store/services/moviesApi";
 
 const UserReviews = ({ movieId }) => {
-  const { data, isLoading, isError } = useGetMovieReviewsQuery(movieId);
+  const { data, isLoading } = useGetMovieReviewsQuery(movieId);
+  const reviews = data?.results || [];
 
   if (isLoading)
     return (
-      <div className="text-zinc-500 animate-pulse">Loading reviews...</div>
-    );
-  if (isError)
-    return <div className="text-red-500">Failed to load reviews.</div>;
-
-  const reviews = data?.results || [];
-
-  if (reviews.length === 0) {
-    return (
-      <div className="mt-12">
-        <h3 className="text-2xl font-bold text-white mb-6">User Reviews</h3>
-        <p className="text-zinc-500 bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
-          No reviews yet. Be the first to discuss this movie!
-        </p>
+      <div className="animate-pulse py-10 text-zinc-600">
+        Аналізуємо думки...
       </div>
     );
-  }
 
   return (
-    <div className="mt-12">
-      <h3 className="text-2xl font-bold text-white mb-6">
-        User Reviews{" "}
-        <span className="text-zinc-500 text-sm font-normal">
-          ({reviews.length})
-        </span>
+    <div className="mt-20">
+      <h3 className="text-3xl font-bold text-white mb-8 tracking-tight">
+        Що кажуть бро{" "}
+        <span className="text-zinc-600 ml-2">{reviews.length}</span>
       </h3>
-      <div className="grid gap-4 md:grid-cols-2">
-        {reviews.slice(0, 4).map(
-          (
-            review, // Показуємо максимум 4 відгуки, щоб не перевантажувати
-          ) => (
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {reviews.length > 0 ? (
+          reviews.slice(0, 4).map((rev) => (
             <div
-              key={review.id}
-              className="bg-zinc-900/40 p-5 rounded-xl border border-zinc-800/50 hover:bg-zinc-900/80 transition-colors"
+              key={rev.id}
+              className="bg-zinc-900/30 p-6 rounded-2xl border border-zinc-800/50 hover:border-zinc-700 transition-all group"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-red-500 font-bold uppercase">
-                  {review.author.charAt(0)}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-zinc-800 flex items-center justify-center text-white font-black text-xl shadow-lg">
+                  {rev.author[0]}
                 </div>
                 <div>
-                  <p className="text-white font-medium">{review.author}</p>
-                  {review.author_details?.rating && (
-                    <p className="text-yellow-500 text-xs">
-                      ⭐ {review.author_details.rating}/10
-                    </p>
-                  )}
+                  <h4 className="text-white font-bold group-hover:text-red-500 transition-colors">
+                    {rev.author}
+                  </h4>
+                  <p className="text-zinc-500 text-xs">Verified Critic</p>
                 </div>
               </div>
-              <p className="text-zinc-400 text-sm line-clamp-4 leading-relaxed">
-                {review.content}
+              <p className="text-zinc-400 text-sm leading-relaxed line-clamp-5">
+                {rev.content}
               </p>
             </div>
-          ),
+          ))
+        ) : (
+          <div className="col-span-full py-10 border-2 border-dashed border-zinc-800 rounded-3xl flex items-center justify-center text-zinc-600">
+            Поки ніхто не лишив відгуку. Будь першим!
+          </div>
         )}
       </div>
     </div>

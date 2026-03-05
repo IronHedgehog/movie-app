@@ -31,15 +31,22 @@ const MoviePage = () => {
   if (!movie) return null;
 
   return (
-    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-12">
-      {/* 1. Блок з інформацією та постером (з сердечком) */}
-      <MovieInfo movie={movie} />
+    <div className="min-h-screen bg-[#141414] text-white">
+      <div className="p-6 lg:p-12 max-w-[1600px] mx-auto">
+        <section className="mb-20">
+          <MovieInfo movie={movie} />
+        </section>
 
-      {/* 2. Блок AI Вердикту (він тепер під постером/описом) */}
-      <MovieAiVerdict movie={movie} />
+        <section className="bg-gradient-to-r from-zinc-900 to-black p-8 rounded-3xl border border-red-900/20 shadow-2xl mb-20">
+          <div className="max-w-4xl">
+            <MovieAiVerdict movie={movie} />
+          </div>
+        </section>
 
-      {/* 3. Блок з реальними відгуками користувачів */}
-      <UserReviews movieId={movieId} />
+        <section>
+          <UserReviews movieId={movieId} />
+        </section>
+      </div>
     </div>
   );
 };
