@@ -2,21 +2,37 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-export const chatModel = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
-  systemInstruction:
-    "Ти — емоційний друг-кіноман. Твоє ім'я КіноБро. Ти спілкуєшся українською, використовуєш емодзі, ти теплий і ламповий. Ти допомагаєш обрати фільм під настрій. Якщо юзер каже 'мені сумно', порадь щось тепле. Якщо 'хочу драйву' — екшн. Намагайся давати відповіді коротко і влучно.",
-});
+// 1. Динамічна ініціалізація чату з контекстом
+export const startChatWithAI = (user = null, movieContext = null) => {
+  // Базова інструкція
+  let instruction =
+    "Ти — емоційний друг-кіноман. Твоє ім'я КіноБро. Ти спілкуєшся українською, використовуєш емодзі, ти теплий і ламповий. Ти допомагаєш обрати фільм під настрій. Якщо юзер каже 'мені сумно', порадь щось тепле. Якщо 'хочу драйву' — екшн. Намагайся давати відповіді коротко і влучно.";
 
-export const startChatWithAI = () => {
-  return chatModel.startChat({
+  // МАГІЯ: Ін'єкція профілю користувача
+  if (user && user.displayName) {
+    const firstName = user.displayName.split(" ")[0];
+    instruction += `\nВАЖЛИВО: Користувача, з яким ти говориш, звати ${firstName}. Звертайся до нього на ім'я періодично.`;
+  }
+
+  // МАГІЯ: Ін'єкція контексту фільму
+  if (movieContext) {
+    instruction += `\nЗараз ви знаходитесь на сторінці фільму: "${movieContext}".`;
+  }
+
+  // Створюємо модель із свіжими інструкціями
+  const dynamicChatModel = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    systemInstruction: instruction,
+  });
+
+  return dynamicChatModel.startChat({
     history: [],
   });
 };
 
+// ... summaryModel та getMovieSummary залишаємо без змін, там усе ідеально!
 const summaryModel = genAI.getGenerativeModel({
   model: "gemini-2.5-pro",
-  // ОНОВЛЕНО: Жорсткі обмеження для короткого вердикту
   systemInstruction:
     "Ти — аналітик кіно відгуків. Пиши максимально лаконічно. Твоє завдання: 1. Цільова аудиторія (1 речення). 2. Атмосфера (макс. 2 пункти). 3. Консенсус глядачів (макс. 3 тези). Кожен пункт не довший за 10-12 слів. Використовуй емодзі. Загальний обсяг — до 60-80 слів.",
 });

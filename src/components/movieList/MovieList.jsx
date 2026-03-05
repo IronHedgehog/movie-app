@@ -5,7 +5,8 @@ const SKELETON_COUNT = 10;
 
 const MovieList = ({ movies, loading }) => {
   return (
-    <ul
+    // Змінено ul на div для правильної семантики
+    <div
       className="
         grid gap-4
         grid-cols-2
@@ -14,11 +15,6 @@ const MovieList = ({ movies, loading }) => {
         lg:grid-cols-5
         xl:grid-cols-6
       "
-      // style={{
-      //   display: "grid",
-      //   gridTemplateColumns: "repeat(auto-fill, 200px)",
-      //   gap: "16px",
-      // }}
     >
       {movies.map((movie) => (
         <MovieCard key={movie.id} movie={movie} />
@@ -28,7 +24,7 @@ const MovieList = ({ movies, loading }) => {
         Array.from({ length: SKELETON_COUNT }).map((_, index) => (
           <MovieSkeleton key={`skeleton-${index}`} />
         ))}
-    </ul>
+    </div>
   );
 };
 

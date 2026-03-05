@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import FavoriteButton from "../UI/FavoriteButton"; // НОВЕ: Імпортуємо кнопку
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
@@ -13,19 +14,23 @@ const MovieCard = ({ movie }) => {
         block
         rounded-xl
         overflow-hidden
-        bg-zinc-900  dark:bg-white
-       shadow-sm dark:shadow-none
+        bg-zinc-900 dark:bg-white
+        shadow-sm dark:shadow-none
         transition
         focus:outline-none
         focus-visible:ring-2
         focus-visible:ring-indigo-500
         focus-visible:ring-offset-2
         focus-visible:ring-offset-zinc-950
+        relative /* ДОДАНО: Для правильного позиціювання кнопки, якщо потрібно */
       "
       aria-label={`Open details for ${title}`}
     >
       {/* Poster */}
       <div className="relative aspect-[2/3] overflow-hidden">
+        {/* НОВЕ: Наша кнопка-сердечко */}
+        <FavoriteButton movieId={id} />
+
         {poster_path ? (
           <img
             src={`${IMAGE_BASE_URL}${poster_path}`}
@@ -48,7 +53,7 @@ const MovieCard = ({ movie }) => {
       </div>
 
       <div className="mt-auto p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold  text-white dark:text-zinc-900">
+        <h3 className="line-clamp-2 text-sm font-semibold text-white dark:text-zinc-900">
           {title}
         </h3>
 

@@ -11,46 +11,56 @@ const QUICK_ACTIONS = [
 
 export const useChatAI = () => {
   const dispatch = useDispatch();
+  // Витягуємо юзера з userSlice
+  const { user } = useSelector((state) => state.user);
   const { chatHistory, isChatOpen, currentMovieContext } = useSelector(
     (state) => state.ai,
   );
+
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const chatRef = useRef(null);
   const chatSession = useRef(null);
 
-  // Ініціалізація або скидання сесії при очищенні історії
+  // 1. Ініціалізація сесії (з урахуванням юзера та фільму)
   useEffect(() => {
+    // Якщо сесії немає, або історія порожня (наприклад, перейшли на інший фільм і скинули чат)
     if (!chatSession.current || chatHistory.length === 0) {
-      chatSession.current = startChatWithAI();
+      chatSession.current = startChatWithAI(user, currentMovieContext);
     }
-  }, [chatHistory]);
+  }, [chatHistory, user, currentMovieContext]); // Додали залежності
 
-  // Скрол до останнього повідомлення
+  // 2. Скрол до останнього повідомлення
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, isTyping]);
 
-  // Контекстне привітання про фільм
+  // 3. Контекстне привітання (Тепер з іменем!)
   useEffect(() => {
     if (isChatOpen && currentMovieContext) {
       const alreadyGreeted = chatHistory.some((m) =>
         m.parts[0].text.includes(currentMovieContext),
       );
+
       if (!alreadyGreeted) {
+        // Визначаємо, як звернутися
+        const userName = user?.displayName
+          ? user.displayName.split(" ")[0]
+          : "Бро";
+
         dispatch(
           addMessage({
             role: "model",
             parts: [
               {
-                text: `Бро, бачу тебе зацікавив фільм "${currentMovieContext}". Що хочеш дізнатися? 😉`,
+                text: `Привіт, ${userName}! Бачу тебе зацікавив фільм "${currentMovieContext}". Що хочеш дізнатися? 😉`,
               },
             ],
           }),
         );
       }
     }
-  }, [isChatOpen, currentMovieContext, dispatch, chatHistory]);
+  }, [isChatOpen, currentMovieContext, dispatch, chatHistory, user]);
 
   const onSend = async (text = inputValue) => {
     const messageText = text.trim();
@@ -61,6 +71,9 @@ export const useChatAI = () => {
     setIsTyping(true);
 
     try {
+      // Тут ми вже можемо не додавати назву фільму до кожного промпта,
+      // бо ми передали її в systemInstruction у geminiApi.js!
+      // Але для Quick Actions залишимо, щоб контекст був точнішим.
       const prompt =
         currentMovieContext && QUICK_ACTIONS.includes(messageText)
           ? `Щодо фільму "${currentMovieContext}": ${messageText}`
