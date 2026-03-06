@@ -5,15 +5,16 @@ const SKELETON_COUNT = 10;
 
 const MovieList = ({ movies, loading }) => {
   return (
-    // Змінено ul на div для правильної семантики
     <div
       className="
-        grid gap-4
+        grid 
+        gap-6 sm:gap-8
         grid-cols-2
-        sm:grid-cols-3
-        md:grid-cols-4
-        lg:grid-cols-5
-        xl:grid-cols-6
+        sm:grid-cols-2
+        md:grid-cols-3
+        lg:grid-cols-3
+        xl:grid-cols-4
+        2xl:grid-cols-5
       "
     >
       {movies.map((movie) => (

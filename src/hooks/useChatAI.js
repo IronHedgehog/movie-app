@@ -3,16 +3,11 @@ import { addMessage, toggleChat } from "@/store/slices/aiSlice";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const QUICK_ACTIONS = [
-  "Схожі фільми 🎞",
-  "Чи варто дивитись? 🤔",
-  "Порівняй з топами 🏆",
-];
-
 export const useChatAI = () => {
   const dispatch = useDispatch();
-  // Витягуємо юзера з userSlice
-  const { user } = useSelector((state) => state.user);
+
+  // ✨ Витягуємо favorites разом із юзером
+  const { user, favorites } = useSelector((state) => state.user);
   const { chatHistory, isChatOpen, currentMovieContext } = useSelector(
     (state) => state.ai,
   );
@@ -22,45 +17,63 @@ export const useChatAI = () => {
   const chatRef = useRef(null);
   const chatSession = useRef(null);
 
-  // 1. Ініціалізація сесії (з урахуванням юзера та фільму)
+  // Флаг, щоб не вітатися двічі (корисно в React Strict Mode)
+  const hasGreetedRef = useRef(false);
+
+  // ✨ Динамічні Quick Actions (змінюються залежно від сторінки)
+  const QUICK_ACTIONS = currentMovieContext
+    ? [
+        "Без спойлерів, варто дивитись? 🤔",
+        "Яка тут головна фішка? 🎬",
+        favorites.length > 0
+          ? "Схоже на мої улюблені? ❤️"
+          : "Порівняй з топами 🏆",
+      ]
+    : [
+        "Порадь щось на вечір 🍿",
+        "Хочеться чогось веселого 😂",
+        favorites.length > 0
+          ? "Що схоже на моє обране? 👀"
+          : "Що зараз популярне? 🔥",
+      ];
+
+  // 1. Ініціалізація сесії (передаємо favorites)
   useEffect(() => {
-    // Якщо сесії немає, або історія порожня (наприклад, перейшли на інший фільм і скинули чат)
     if (!chatSession.current || chatHistory.length === 0) {
-      chatSession.current = startChatWithAI(user, currentMovieContext);
+      chatSession.current = startChatWithAI(
+        user,
+        currentMovieContext,
+        favorites,
+      );
+      hasGreetedRef.current = false; // Скидаємо прапорець при новій сесії
     }
-  }, [chatHistory, user, currentMovieContext]); // Додали залежності
+  }, [chatHistory.length, user, currentMovieContext, favorites]);
 
   // 2. Скрол до останнього повідомлення
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, isTyping]);
 
-  // 3. Контекстне привітання (Тепер з іменем!)
+  // 3. ✨ Контекстне привітання (Фікс білого екрану)
   useEffect(() => {
-    if (isChatOpen && currentMovieContext) {
-      const alreadyGreeted = chatHistory.some((m) =>
-        m.parts[0].text.includes(currentMovieContext),
+    if (isChatOpen && chatHistory.length === 0 && !hasGreetedRef.current) {
+      hasGreetedRef.current = true;
+      const userName = user?.displayName
+        ? user.displayName.split(" ")[0]
+        : "Бро";
+
+      const greetingText = currentMovieContext
+        ? `Привіт, ${userName}! Бачу тебе зацікавив фільм "${currentMovieContext}". Що хочеш дізнатися? 😉`
+        : `Привіт, ${userName}! Я КіноБро. Який настрій сьогодні? Підберемо крутий фільм! 🍿`;
+
+      dispatch(
+        addMessage({
+          role: "model",
+          parts: [{ text: greetingText }],
+        }),
       );
-
-      if (!alreadyGreeted) {
-        // Визначаємо, як звернутися
-        const userName = user?.displayName
-          ? user.displayName.split(" ")[0]
-          : "Бро";
-
-        dispatch(
-          addMessage({
-            role: "model",
-            parts: [
-              {
-                text: `Привіт, ${userName}! Бачу тебе зацікавив фільм "${currentMovieContext}". Що хочеш дізнатися? 😉`,
-              },
-            ],
-          }),
-        );
-      }
     }
-  }, [isChatOpen, currentMovieContext, dispatch, chatHistory, user]);
+  }, [isChatOpen, currentMovieContext, dispatch, chatHistory.length, user]);
 
   const onSend = async (text = inputValue) => {
     const messageText = text.trim();
@@ -71,15 +84,9 @@ export const useChatAI = () => {
     setIsTyping(true);
 
     try {
-      // Тут ми вже можемо не додавати назву фільму до кожного промпта,
-      // бо ми передали її в systemInstruction у geminiApi.js!
-      // Але для Quick Actions залишимо, щоб контекст був точнішим.
-      const prompt =
-        currentMovieContext && QUICK_ACTIONS.includes(messageText)
-          ? `Щодо фільму "${currentMovieContext}": ${messageText}`
-          : messageText;
-
-      const res = await chatSession.current.sendMessage(prompt);
+      // Більше не треба приклеювати currentMovieContext до тексту,
+      // бо ми передали його в systemInstruction
+      const res = await chatSession.current.sendMessage(messageText);
       dispatch(
         addMessage({ role: "model", parts: [{ text: res.response.text() }] }),
       );

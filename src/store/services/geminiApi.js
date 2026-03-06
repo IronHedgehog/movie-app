@@ -2,11 +2,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// 1. Динамічна ініціалізація чату з контекстом
-export const startChatWithAI = (user = null, movieContext = null) => {
+// ✨ НОВЕ: Додали параметр favorites (за замовчуванням порожній масив)
+export const startChatWithAI = (
+  user = null,
+  movieContext = null,
+  favorites = [],
+) => {
   // Базова інструкція
   let instruction =
-    "Ти — емоційний друг-кіноман. Твоє ім'я КіноБро. Ти спілкуєшся українською, використовуєш емодзі, ти теплий і ламповий. Ти допомагаєш обрати фільм під настрій. Якщо юзер каже 'мені сумно', порадь щось тепле. Якщо 'хочу драйву' — екшн. Намагайся давати відповіді коротко і влучно.";
+    "Ти — емоційний друг-кіноман. Твоє ім'я КіноБро. Ти спілкуєшся українською, використовуєш емодзі, ти теплий і ламповий. Ти допомагаєш обрати фільм під настрій. Якщо юзер каже 'мені сумно', порадь щось тепле. Якщо 'хочу драйву' — екшн. Намагайся давати відповіді коротко і влучно (до 4 речень).";
 
   // МАГІЯ: Ін'єкція профілю користувача
   if (user && user.displayName) {
@@ -14,9 +18,14 @@ export const startChatWithAI = (user = null, movieContext = null) => {
     instruction += `\nВАЖЛИВО: Користувача, з яким ти говориш, звати ${firstName}. Звертайся до нього на ім'я періодично.`;
   }
 
+  // ✨ МАГІЯ: Аналіз вподобань (Favorites)
+  if (favorites && favorites.length > 0) {
+    instruction += `\nВАЖЛИВО: Користувач любить фільми з цими TMDB ID: ${favorites.join(", ")}. Якщо він просить пораду, підбирай схоже на ці фільми за жанром чи атмосферою!`;
+  }
+
   // МАГІЯ: Ін'єкція контексту фільму
   if (movieContext) {
-    instruction += `\nЗараз ви знаходитесь на сторінці фільму: "${movieContext}".`;
+    instruction += `\nЗараз ви знаходитесь на сторінці фільму: "${movieContext}". Якщо користувач задає коротке питання (наприклад "чи варто?"), він має на увазі саме цей фільм.`;
   }
 
   // Створюємо модель із свіжими інструкціями
@@ -30,7 +39,7 @@ export const startChatWithAI = (user = null, movieContext = null) => {
   });
 };
 
-// ... summaryModel та getMovieSummary залишаємо без змін, там усе ідеально!
+// ... summaryModel та getMovieSummary залишаються без змін ...
 const summaryModel = genAI.getGenerativeModel({
   model: "gemini-2.5-pro",
   systemInstruction:

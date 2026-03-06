@@ -11,17 +11,24 @@ import { useDispatch, useSelector } from "react-redux";
 export const useMovieVerdict = (movie) => {
   const dispatch = useDispatch();
   const cachedVerdict = useSelector((state) => state.ai.verdicts[movie?.id]);
-  const { data: reviewsData } = useGetMovieReviewsQuery(movie?.id, {
-    skip: !movie?.id,
-  });
+
+  // ✨ ФІКС: Передаємо об'єкт { id: movie?.id }
+  // ✨ ДОДАНО: Дістаємо isQueryError на випадок, якщо відгуки не завантажаться
+  const { data: reviewsData, isError: isQueryError } = useGetMovieReviewsQuery(
+    { id: movie?.id },
+    { skip: !movie?.id },
+  );
+
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState(false); // ✨ Стан для помилки AI
 
   useEffect(() => {
     const generate = async () => {
-      // Умови для виходу: якщо вже є вердикт, або немає даних для аналізу
       if (cachedVerdict || !reviewsData || !movie?.id || isGenerating) return;
 
       setIsGenerating(true);
+      setGenerationError(false);
+
       try {
         const resultText = await getMovieSummary(
           movie.title,
@@ -31,12 +38,14 @@ export const useMovieVerdict = (movie) => {
         dispatch(saveVerdict({ movieId: movie.id, verdict: resultText }));
       } catch (error) {
         console.error("AI Verdict Error:", error);
+        setGenerationError(true); // Ловимо помилку генерації
       } finally {
         setIsGenerating(false);
       }
     };
 
     generate();
+    // Не додаємо isGenerating в масив залежностей, щоб уникнути зациклення
   }, [movie, reviewsData, cachedVerdict, dispatch]);
 
   const handleDiscuss = () => {
@@ -48,5 +57,6 @@ export const useMovieVerdict = (movie) => {
     verdict: cachedVerdict,
     isGenerating,
     handleDiscuss,
+    error: isQueryError || generationError,
   };
 };

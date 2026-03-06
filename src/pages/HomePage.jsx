@@ -1,74 +1,35 @@
-import Button from "@mui/material/Button";
-import { useState } from "react";
+import { useHomeMovies } from "../hooks/useHomeMovies";
 
-// Імпортуємо обидва хуки
-import {
-  useGetPopularMoviesQuery,
-  useSearchMoviesQuery,
-} from "../store/services/moviesApi";
-
-import MovieList from "../components/movieList/MovieList";
-import MovieSkeletonList from "../components/movieList/MovieSkeletonList";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ErrorMessage from "../components/UI/ErrorMessage";
-import Loader from "../components/UI/Loader";
-
-import PageContainer from "../components/layout/PageContainer";
 import ThemeToggle from "../components/UI/ThemeToggle";
-
+import PageContainer from "../components/layout/PageContainer";
 import Header from "../sections/Header/components/Header";
 import Hero from "../sections/Hero/Hero";
 
+import FilterSidebar from "../components/UI/FilterSidebar";
+import PaginatedMovieGrid from "../components/movieList/PaginatedMovieGrid";
+
 const HomePage = () => {
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-
-  // Прапорець: чи ми зараз щось шукаємо?
-  const isSearch = Boolean(query);
-
-  // 1. Запит популярних фільмів (Пропускаємо, якщо є пошуковий запит)
+  // ✨ Уся магія тепер ховається тут
   const {
-    data: popularData,
-    isFetching: isFetchingPopular,
-    isError: isErrorPopular,
-    refetch: refetchPopular,
-  } = useGetPopularMoviesQuery(page, { skip: isSearch });
-
-  // 2. Запит пошуку (Пропускаємо, якщо поле пошуку порожнє)
-  const {
-    data: searchData,
-    isFetching: isFetchingSearch,
-    isError: isErrorSearch,
-    refetch: refetchSearch,
-  } = useSearchMoviesQuery({ query, page }, { skip: !isSearch });
-
-  // 3. Динамічно визначаємо, які дані зараз показувати
-  const currentData = isSearch ? searchData : popularData;
-  const isFetching = isSearch ? isFetchingSearch : isFetchingPopular;
-  const isError = isSearch ? isErrorSearch : isErrorPopular;
-  const refetch = isSearch ? refetchSearch : refetchPopular;
-
-  const movies = currentData?.results || [];
-  const totalPages = currentData?.total_pages || 0;
-
-  // Додаємо безпечні перевірки
-  const hasMore = page < totalPages;
-  const isFirstPage = page === 1;
-
-  // Обробник пошуку
-  const handleSearch = (newQuery) => {
-    setQuery(newQuery);
-    setPage(1); // Новий пошук завжди починається з 1 сторінки
-  };
-
-  const loadMore = () => {
-    if (!isFetching && hasMore) {
-      setPage((prevPage) => prevPage + 1);
-    }
-  };
+    movies,
+    isFetching,
+    isError,
+    refetch,
+    isFirstPage,
+    hasMore,
+    isSearch,
+    filters,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    handleSearch,
+    handleFilterChange,
+    loadMore,
+  } = useHomeMovies();
 
   return (
-    <main>
+    <main className="flex flex-col min-h-screen relative">
       <Header />
       <Hero />
 
@@ -76,25 +37,59 @@ const HomePage = () => {
         <div className="flex justify-end py-4">
           <ThemeToggle />
         </div>
+
         <SearchBar onSearch={handleSearch} debounceTime={500} />
 
         {isError && (
-          <ErrorMessage message="Failed to fetch movies" onRetry={refetch} />
+          <ErrorMessage
+            message="Помилка завантаження фільмів"
+            onRetry={refetch}
+          />
         )}
 
-        {isFetching && isFirstPage ? (
-          <MovieSkeletonList />
-        ) : (
-          <MovieList movies={movies} loading={isFetching} />
-        )}
+        <div className="flex flex-col lg:flex-row gap-8 mt-6">
+          {!isSearch && (
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden w-full bg-zinc-800 text-white p-3 rounded-xl font-bold border border-zinc-700 transition-colors"
+            >
+              Налаштувати фільтри 🎬
+            </button>
+          )}
 
-        {isFetching && !isFirstPage && <Loader />}
+          {/* Десктопний сайдбар */}
+          {!isSearch && (
+            <div className="hidden lg:block sticky top-24 h-fit z-30">
+              <FilterSidebar
+                isOpen={false}
+                onClose={() => setIsSidebarOpen(false)}
+                activeFilters={filters}
+                onFilterChange={handleFilterChange} // ✨ Передали новий пропс
+              />
+            </div>
+          )}
 
-        {!isFetching && hasMore && !isError && (
-          <Button variant="outlined" onClick={loadMore}>
-            Load more
-          </Button>
-        )}
+          {/* Мобільний сайдбар */}
+          <div className="lg:hidden">
+            <FilterSidebar
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+              activeFilters={filters}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+
+          <div className="flex-1">
+            <PaginatedMovieGrid
+              movies={movies}
+              isFetching={isFetching}
+              isFirstPage={isFirstPage}
+              isError={isError}
+              hasMore={hasMore}
+              loadMore={loadMore}
+            />
+          </div>
+        </div>
       </PageContainer>
     </main>
   );
